@@ -15,20 +15,19 @@ func main() {
     }
     var sum int
     lines := strings.Split(string(data), "\n")
-    for _, line := range lines {
-        if line == "" {
-            continue;
-        }
-        pivot := len(line)/2
-        left  := line[:pivot]
-        right := line[pivot:]
+    for i := 0; i < len(lines) && len(lines) - i > 3; i += 3 {
+        line1 := lines[i]
+        line2 := lines[i + 1]
+        line3 := lines[i + 2]
         var common rune
         loop:
-        for _, l := range left {
-            for _, r := range right {
-                if l == r {
-                    common = l
-                    break loop
+        for _, l1 := range line1 {
+            for _, l2 := range line2 {
+                for _, l3 := range line3 {
+                    if l1 == l2 && l2 == l3 {
+                        common = l1
+                        break loop
+                    }
                 }
             }
         }
