@@ -26,15 +26,18 @@ func main() {
     fmt.Println("sum:", sum);
 }
 
-// A, X = rock
-// B, Y = paper
-// C, Z = scissors
+// A = rock
+// B = paper
+// C = scissors
+// X = lose
+// Y = draw
+// Z = win
 
 var reward [3][3]int = [3][3]int{
 //   X,     Y,     Z
-    {1 + 3, 2 + 6, 3 + 0}, // A
+    {3 + 0, 1 + 3, 2 + 6}, // A
     {1 + 0, 2 + 3, 3 + 6}, // B
-    {1 + 6, 2 + 0, 3 + 3}, // C
+    {2 + 0, 3 + 3, 1 + 6}, // C
 }
 
 func get_hand_index(hand string) int {
