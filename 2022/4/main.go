@@ -35,8 +35,8 @@ func main() {
             line = line[1:]; // '-'
             b1 := get_next_number(&line);
 
-            if a0 >= b0 && a1 <= b1 ||
-               b0 >= a0 && b1 <= a1 {
+            if a1 >= b0 && a1 <= b1 || a0 <= b1 && a0 >= b0 ||
+               b1 >= a0 && b1 <= a1 || b0 <= a1 && b0 >= a0 {
                 sum += 1;
             }
         }
