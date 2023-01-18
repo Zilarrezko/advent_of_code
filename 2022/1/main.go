@@ -7,6 +7,7 @@ import (
     "log"
     "strings"
     "strconv"
+    "sort"
 )
 
 func main() {
@@ -15,14 +16,13 @@ func main() {
         log.Fatal(err);
     }
 
-    var max_calories int;
+    // Doing it this way obviously isn't the most performant method, but it works, and it's somewhat elegant
+    var calories_list []int;
     var calories int;
     lines := strings.Split(string(data), "\n");
     for _, line := range lines {
         if line == "" {
-            if calories > max_calories {
-                max_calories = calories;
-            }
+            calories_list = append(calories_list, calories);
             calories = 0;
         } else {
             calorie, err := strconv.Atoi(line);
@@ -32,5 +32,13 @@ func main() {
             calories += calorie;
         }
     }
-    fmt.Println("max calories:", max_calories);
+    sort.Ints(calories_list); // ascending
+    const elves int = 3;
+    var sum int;
+    for i := len(calories_list) - 1; i >= len(calories_list) - elves; i -= 1 {
+        x := calories_list[i];
+        sum += x;
+        fmt.Println(i, x);
+    }
+    fmt.Println("sum:", sum);
 }
