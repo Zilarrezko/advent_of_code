@@ -50,10 +50,14 @@ func main() {
             log.Fatal(err);
         }
 
+        var temp_stack []rune;
         for i := 0; i < n; i += 1 {
             c := stacks[from][len(stacks[from]) - 1];
-            stacks[to] = append(stacks[to], c);
+            temp_stack = append(temp_stack, c);
             stacks[from] = stacks[from][:len(stacks[from]) - 1];
+        }
+        for i := n - 1; i >= 0; i -= 1{
+            stacks[to] = append(stacks[to], temp_stack[i]);
         }
     }
 
