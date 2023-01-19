@@ -14,7 +14,7 @@ func main () {
     if err != nil {
         log.Fatal(err);
     }
-    for i := 0; i < len(data) - g_window_size - 1; i += 1 {
+    for i := 0; i < len(data) - (g_window_size - 1); i += 1 {
         window := data[i : i + g_window_size];
         if !has_duplicate(window) {
             fmt.Println(i + g_window_size);
