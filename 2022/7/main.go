@@ -7,6 +7,7 @@ import (
     "fmt"
     "strings"
     "strconv"
+    "sort"
 )
 
 type Node struct {
@@ -17,7 +18,8 @@ type Node struct {
 }
 
 const (
-    candidate_size int = 100000;
+    disk_capacity  int = 70000000;
+    needed_space   int = 30000000;
 )
 
 
@@ -27,37 +29,37 @@ func main() {
         log.Fatal(err);
     }
     root := parse_filesystem(string(data));
-    find_candidates(root);
-}
-
-
-var g_condidate_total int;
-func find_candidates(root Node) {
-    path := "";
-    g_condidate_total = 0;
-    for _, f := range root.children {
-        if f.is_dir {
-            new_path := strings.Join([]string{path, f.name}, "/");
-            find_candidate_helper(f, new_path);
+    var dir_sizes []int;
+    size := find_candidates(root, &dir_sizes, "");
+    empty_space := disk_capacity - size;
+    space_to_go := needed_space - empty_space;
+    dot_print("total size", 32);
+    fmt.Println(size);
+    dot_print("empty space", 32);
+    fmt.Println(empty_space);
+    dot_print("space to go", 32);
+    fmt.Println(space_to_go);
+    sort.Ints(dir_sizes);
+    for i, x := range dir_sizes {
+        if x >= space_to_go {
+            fmt.Println(i, x);
+            break;
         }
     }
-    fmt.Println("Total freeable size:", g_condidate_total);
 }
-func find_candidate_helper(root Node, path string) int {
+
+
+func find_candidates(root Node, dir_sizes *[]int, path string) int {
     var dir_size int;
     for _, f := range root.children {
         if f.is_dir {
             new_path := strings.Join([]string{path, f.name}, "/");
-            dir_size += find_candidate_helper(f, new_path);
+            dir_size += find_candidates(f, dir_sizes, new_path);
         } else {
             dir_size += f.size;
         }
     }
-    if dir_size <= candidate_size {
-        dot_print(path, 72);
-        fmt.Println(dir_size);
-        g_condidate_total += dir_size;
-    }
+    *dir_sizes = append(*dir_sizes, dir_size);
     return dir_size;
 }
 
