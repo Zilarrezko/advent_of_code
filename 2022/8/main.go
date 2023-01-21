@@ -25,68 +25,56 @@ func main() {
         }
     }
 
-    var visible_trees int;
+    var max_score int;
     for i, _ := range grid {
         x := i%width;
         y := i/width;
-        if is_visible(grid, width, x, y) {
-            visible_trees += 1;
+        score := tree_score(grid, width, x, y);
+        if score > max_score {
+            max_score = score;
         }
     }
-    fmt.Println("visible_trees", visible_trees);
+    fmt.Println("max scenic score", max_score);
 }
 
 
-func is_visible(grid []int, width int, col, row int) bool {
-    if row == 0 || row == width - 1 || col == 0 || col == width - 1 {
-        return true;
-    }
+func tree_score(grid []int, width int, col, row int) int {
     h := grid[row*width + col];
 
-    var visible bool = true;
+    var scores [4]int;
     // left
     for i := col - 1; i >= 0; i -= 1 {
+        scores[0] += 1;
         if grid[row*width + i] >= h {
-            visible = false;
             break;
         }
     }
-    if visible {
-        return true;
-    }
-    visible = true;
-
     // right
     for i := col + 1; i < width; i += 1 {
+        scores[1] += 1;
         if grid[row*width + i] >= h {
-            visible = false;
             break;
         }
     }
-    if visible {
-        return true;
-    }
-    visible = true;
-
     // up
     for i := row - 1; i >= 0; i -= 1 {
+        scores[2] += 1;
         if grid[i*width + col] >= h {
-            visible = false;
             break;
         }
     }
-    if visible {
-        return true;
-    }
-    visible = true;
-
     // bottom
     for i := row + 1; i < width; i += 1 {
+        scores[3] += 1;
         if grid[i*width + col] >= h {
-            visible = false;
             break;
         }
     }
 
-    return visible;
+    var sum int = 1;
+    for _, x := range scores {
+        sum *= x;
+    }
+
+    return sum;
 }
