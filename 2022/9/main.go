@@ -19,58 +19,47 @@ func main() {
         log.Fatal(err);
     }
     var visited map[v2]bool = make(map[v2]bool, 0);
-    var head v2;
-    var tail v2;
-    visited[tail] = true
+    var knots [10]v2;
+    visited[knots[0]] = true;
     lines := strings.Split(string(data), "\n");
     for _, line := range lines {
         face := line[0];
         amnt, _ := strconv.Atoi(line[2:]);
         for d := 0; d < amnt; d += 1 {
-            from := head;
             switch face {
-                case 'U': head.y += 1;
-                case 'D': head.y -= 1;
-                case 'L': head.x -= 1;
-                case 'R': head.x += 1;
+                case 'U': knots[0].y += 1;
+                case 'D': knots[0].y -= 1;
+                case 'L': knots[0].x -= 1;
+                case 'R': knots[0].x += 1;
             }
-            // If the head moves cardinally this should be enough
-            if chebychev_distance(tail, head) > 1 {
-                tail = from;
-                visited[tail] = true;
+            for i := 1; i < len(knots); i += 1 {
+                if chebyshev_distance(knots[i], knots[i - 1]) > 1 {
+                    dx := knots[i - 1].x - knots[i].x;
+                    dy := knots[i - 1].y - knots[i].y;
+                    knots[i].x += sign(dx);
+                    knots[i].y += sign(dy);
+                }
             }
+            last_knot := knots[len(knots) - 1];
+            visited[last_knot] = true;
         }
     }
     fmt.Println(len(visited));
 }
 
 
-// Note: Debug
-func print_head_tail(head, tail v2) {
-    l := min(head.x, tail.x);
-    r := max(head.x, tail.x);
-    t := min(head.y, tail.y);
-    b := max(head.y, tail.y);
-    var p v2;
-    for y := t; y <= b; y += 1 {
-        for x := l; x <= r; x += 1 {
-            p.x = x;
-            p.y = y;
-            if p == head {
-                fmt.Print("H");
-            } else if p == tail {
-                fmt.Print("T");
-            } else {
-                fmt.Print(".");
-            }
-        }
-        fmt.Println();
+func sign(x int) int {
+    if x < 0 {
+        return -1;
     }
-    fmt.Println();
+    if x > 0 {
+        return 1;
+    }
+    return 0;
 }
 
 
-func chebychev_distance(a, b v2) int {
+func chebyshev_distance(a, b v2) int {
     return max(abs(b.x - a.x), abs(b.y - a.y));
 }
 
@@ -80,14 +69,6 @@ func abs(x int) int {
         return -x;
     }
     return x;
-}
-
-
-func min(a, b int) int {
-    if a < b {
-        return a;
-    }
-    return b;
 }
 
 
