@@ -10,12 +10,18 @@ import (
 )
 
 
+const (
+    width = 40;
+    height = 6;
+)
+
+
 func main() {
     data, err := os.ReadFile("input.txt");
     if err != nil {
         log.Fatal(err);
     }
-    var trace []int; // hilarious
+    var trace []int;
     var x int = 1;
     lines := strings.Split(string(data), "\n");
     for _, line := range lines {
@@ -34,10 +40,23 @@ func main() {
                 log.Fatal("unknown mnemonic"); // unreachable
         }
     }
-    var breakpoints []int = []int{20, 60, 100, 140, 180, 220};
-    var sum int;
-    for _, x := range breakpoints {
-        sum += trace[x - 1]*x;
+
+    var screen [height*width]rune;
+    for c, v := range trace {
+        x := c%width;
+        r := '.';
+        if v - 1 == x || v == x || v + 1 == x {
+            r = '#';
+        }
+        screen[c] = r;
     }
-    fmt.Println("sum", sum);
+
+    for i, r := range screen {
+        x := i%width;
+        y := i/width;
+        if x == 0 && y != 0 {
+            fmt.Println();
+        }
+        fmt.Print(string(r));
+    }
 }
