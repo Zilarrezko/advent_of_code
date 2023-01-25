@@ -130,13 +130,17 @@ func main() {
             log.Fatal(err);
         }
         monkey.on_false = to_monkey;
-
         monkeys = append(monkeys, monkey);
     }
 
+    var multiple_modulus int = 1;
+    for _, m := range monkeys {
+        multiple_modulus *= m.test;
+    }
 
+    // monkey business
     var inspections []int = make([]int, len(monkeys));
-    var total_rounds int = 20;
+    var total_rounds int = 10000;
     for round := 1; round <= total_rounds; round += 1 {
         for i, m := range monkeys {
             for j := len(m.items) - 1; j >= 0; j -= 1 {
@@ -151,7 +155,9 @@ func main() {
                 } else {
                     v = v + u;
                 }
-                v = v/3;
+                // modular reduced multiples of divisibility of the monkeys... Since they're all primes we had to multiply them all
+                // This one was a difficult one, I had to research it
+                v = v % multiple_modulus;
                 if v % m.test == 0 {
                     monkeys[m.on_true].items = append(monkeys[m.on_true].items, v);
                 } else {
