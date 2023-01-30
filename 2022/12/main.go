@@ -6,16 +6,19 @@ import (
     "log"
     "strings"
     "fmt"
+    "math"
 )
 
 
 var (
     printing bool;
+    optimize bool;
 )
 
 
 func main() {
     printing = get_arg("-p");
+    optimize = get_arg("-o");
     data, err := os.ReadFile("input.txt");
     if err != nil {
         log.Fatal(err);
@@ -26,14 +29,50 @@ func main() {
     var grid []byte = make([]byte, height*width);
     for y, row := range rows {
         for x, h := range row {
-            grid[y*width + x] = byte(h);
+            if h == 'S' {
+                grid[y*width + x] = byte('a');
+            } else {
+                grid[y*width + x] = byte(h);
+            }
         }
     }
     fmt.Print("\x1b[?25l");
-    print_path(grid, width, []int{});
-    path := pathfind(grid, width);
-    print_path(grid, width, path);
-    fmt.Println(len(path) - 1, "steps");
+    if printing {
+        print_path(grid, width, []int{});
+    }
+    var closest []int;
+    var close_dist int = math.MaxInt64;
+    var working_grid []byte = make([]byte, len(grid)); //
+    copy(working_grid, grid);
+    for i := 0; i < len(working_grid); i += 1 {
+        x := working_grid[i];
+        if x == 'a' {
+            grid[i] = 'S';
+            working_grid[i] = 'S';
+            path := pathfind(grid, width);
+            if printing {
+                fmt.Print("\x1b[42F");
+                print_path(working_grid, width, path);
+            }
+            dist := len(path) - 1;
+            if dist > 0 && dist < close_dist {
+                closest = path;
+                close_dist = dist;
+            }
+            grid[i] = 'a';
+            working_grid[i] = 'a';
+
+            // Never reached the end, so flood fill so we don't check anything here again
+            if optimize && len(path) == 0 {
+                flood(working_grid, width, i);
+            }
+        }
+    }
+    if printing {
+        fmt.Print("\x1b[42F");
+    }
+    print_path(working_grid, width, closest);
+    fmt.Println(close_dist, "steps");
     fmt.Print("\x1b[?25h");
 }
 
@@ -41,8 +80,33 @@ func main() {
 type Node struct {
     pos int;
     parent int;
-    g_cost int;
-    f_cost int;
+    gcost int;
+    fcost int;
+}
+
+
+// Flood fill 'a' with '!' to denote not to check the area later
+func flood(grid []byte, width int, at int) {
+    if at < 0 || at >= len(grid) {
+        return;
+    }
+    if grid[at] == 'a' {
+        grid[at] = '!';
+        x := at%width;
+        y := at/width;
+        if x > 0 {
+            flood(grid, width, at - 1);
+        }
+        if x < width - 1 {
+            flood(grid, width, at + 1);
+        }
+        if y > 0 {
+            flood(grid, width, at - width);
+        }
+        if y < len(grid)/width - 1 {
+            flood(grid, width, at + width);
+        }
+    }
 }
 
 
@@ -92,13 +156,13 @@ func pathfind(grid []byte, width int) []int {
     node.parent = -1;
     open = append(open, node);
     for len(open) > 0 {
-        if printing && len(visited)%4 == 0 {
+        if printing && len(visited)%64 == 0 {
             print_visited_open_grid(grid, width, open, visited);
         }
 
         var closest int;
         for i, n := range open {
-            if n.f_cost < open[closest].f_cost {
+            if n.fcost < open[closest].fcost {
                 closest = i;
             }
         }
@@ -134,28 +198,30 @@ func pathfind(grid []byte, width int) []int {
                 }
                 var neighbor Node;
                 neighbor.pos = ny*width + nx;
-                neighbor.g_cost = node.f_cost + 10; // cardinal tile distance
-                neighbor.f_cost = neighbor.g_cost + integer_distance(neighbor.pos, end, width);
+                neighbor.gcost = node.fcost + 10; // cardinal tile distance
+                neighbor.fcost = neighbor.gcost + integer_distance(neighbor.pos, end, width);
 
-                if exists(open, neighbor.pos) {
-                    var idx int;
-                    for i, n := range open {
-                        if n.pos == neighbor.pos {
-                            idx = i;
-                            break;
+                _, is_visited := visited[neighbor.pos];
+                if !is_visited {
+                    if exists(open, neighbor.pos) {
+                        var idx int;
+                        for i, n := range open {
+                            if n.pos == neighbor.pos {
+                                idx = i;
+                                break;
+                            }
                         }
-                    }
-                    cmpr := open[idx];
-                    if cmpr.f_cost > neighbor.f_cost {
-                        neighbor.parent = node.pos;
-                        open[idx] = neighbor;
-                    }
-                } else {
-                    _, is_visited := visited[neighbor.pos];
-                    var adding bool = walkable(grid[neighbor.pos], grid[node.pos]) && !is_visited;
-                    if adding {
-                        neighbor.parent = node.pos;
-                        open = append(open, neighbor);
+                        cmpr := open[idx];
+                        if cmpr.fcost > neighbor.fcost {
+                            neighbor.parent = node.pos;
+                            open[idx] = neighbor;
+                        }
+                    } else {
+                        var adding bool = walkable(grid[neighbor.pos], grid[node.pos]) && !is_visited;
+                        if adding {
+                            neighbor.parent = node.pos;
+                            open = append(open, neighbor);
+                        }
                     }
                 }
             }
