@@ -30,6 +30,7 @@ func main() {
         }
     }
     fmt.Print("\x1b[?25l");
+    print_path(grid, width, []int{});
     path := pathfind(grid, width);
     print_path(grid, width, path);
     fmt.Println(len(path) - 1, "steps");
