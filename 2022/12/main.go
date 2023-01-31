@@ -87,9 +87,6 @@ type Node struct {
 
 // Flood fill 'a' with '!' to denote not to check the area later
 func flood(grid []byte, width int, at int) {
-    if at < 0 || at >= len(grid) {
-        return;
-    }
     if grid[at] == 'a' {
         grid[at] = '!';
         x := at%width;
@@ -156,7 +153,7 @@ func pathfind(grid []byte, width int) []int {
     node.parent = -1;
     open = append(open, node);
     for len(open) > 0 {
-        if printing && len(visited)%64 == 0 {
+        if printing && len(visited)%128 == 0 {
             print_visited_open_grid(grid, width, open, visited);
         }
 
